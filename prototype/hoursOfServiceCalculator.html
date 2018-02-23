@@ -1,0 +1,195 @@
+<html>
+<head>
+	<meta name"hours of service" "article">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Paul Waked">
+	<title> - Hours Of Service </title> 
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css">  
+<script>
+		
+$(window).load(function(){
+
+CreateRowHeading();
+CreateRowOffDuty();	
+CreateRowDriving();
+CreateRowOnDutyNotDriving();
+CreateRowRemarks();			
+			
+function CreateRowHeading() {
+	$("#tblServiceHours #rowHeading").append('<td class="headingCell">Date</td>');
+	$("#tblServiceHours #rowHeading").append('<td class="headingCell">Duty Status</td>');
+	for(i=0;i<24;i++){
+		$("#tblServiceHours #rowHeading").append('<td class="headingCell noBorderLeftRight" colspan=4>' + (i+1) + '</td>');	
+	}	
+	$("#tblServiceHours #rowHeading").append('<td class="headingCell">Totals</td>');
+}
+
+function CreateRowOffDuty() {
+	$("#tblServiceHours #rowOffDuty").append('<td class="category" rowspan=4></td>');
+	$("#tblServiceHours #rowOffDuty").append('<td class="category">Off Duty</td>');
+	for(i=0;i<96;i++){	
+		if ((i+1)%4==0)
+			$("#tblServiceHours #rowOffDuty").append('<td class="cell rightBorderSolid"></td>');
+		else 
+			$("#tblServiceHours #rowOffDuty").append('<td class="cell rightBorderDotted"></td>');		
+	}	
+	$("#tblServiceHours #rowOffDuty").append('<td class="headingCell" id="totalOffDuty"></td>');
+}
+
+function CreateRowDriving() {
+	$("#tblServiceHours #rowDriving").append('<td class="category">Driving</td>');
+	for(i=0;i<96;i++){	
+		if ((i+1)%4==0)
+			$("#tblServiceHours #rowDriving").append('<td class="cell rightBorderSolid"></td>');
+		else 
+			$("#tblServiceHours #rowDriving").append('<td class="cell rightBorderDotted"></td>');		
+	}	
+	$("#tblServiceHours #rowDriving").append('<td class="headingCell" id="totalDriving"></td>');
+}		
+
+function CreateRowOnDutyNotDriving() {
+	$("#tblServiceHours #rowOnDutyNotDriving").append('<td class="category">On Duty Not Driving</td>');
+	for(i=0;i<96;i++){	
+		if ((i+1)%4==0)
+			$("#tblServiceHours #rowOnDutyNotDriving").append('<td class="cell rightBorderSolid"></td>');
+		else 
+			$("#tblServiceHours #rowOnDutyNotDriving").append('<td class="cell rightBorderDotted"></td>');		
+	}	
+	$("#tblServiceHours #rowOnDutyNotDriving").append('<td class="headingCell" id="totalOnDutyNotDriving"></td>');	
+}	
+
+function CreateRowRemarks() {
+	$("#tblServiceHours #rowRemarks").append('<td class="category">Remarks</td>');
+	for(i=0;i<6;i++){
+		$("#tblServiceHours #rowRemarks").append('<td class="headingCell noBorderLeftRight" style="text-align:left;" colspan=12><input type="text" /></td>');
+	}	
+	$("#tblServiceHours #rowRemarks").append('<td class="headingCell noBorderLeftRight" style="text-align:left;" colspan=16><input style="width: 120px;" type="text" /></td>');
+	$("#tblServiceHours #rowRemarks").append('<td class="headingCell" colspan=8>Cycle 1</td>');
+	$("#tblServiceHours #rowRemarks").append('<td class="headingCell" id="cycle1"></td>');	
+}	
+
+function update_counts(){
+	var category = "";
+	var totalOffDuty = 0;
+	var cycle1=0;
+    $('#status').html('');
+	
+    $('.row').each(function(index){
+		if (index == 0)
+		{
+			category = "Off-duty";
+			totalOffDuty = $(this).find('.selectedCell').length * 0.25;		
+			$("#totalOffDuty").text(totalOffDuty); 		
+		}
+		
+		if (index == 1)
+		{
+			category = "Driving";
+			totalDriving = $(this).find('.selectedCell').length * 0.25;
+			$("#totalDriving").text(totalDriving); 
+			cycle1 = cycle1 + totalDriving;
+			$("#cycle1").text(cycle1);
+		}
+		
+		if (index == 2)
+		{
+			category = "On-Duty-Not Driving";
+			totalOnDutyNotDriving = $(this).find('.selectedCell').length * 0.25;
+			$("#totalOnDutyNotDriving").text(totalOnDutyNotDriving); 
+			cycle1 = cycle1 + totalOnDutyNotDriving;
+			$("#cycle1").text(cycle1);
+		}
+		if (index==0 || index== 1 || index==2)
+		{
+			var hours = Math.floor( $(this).find('.selectedCell').length * 15 / 60);
+			var minutes = $(this).find('.selectedCell').length * 15 % 60;
+			$('#status').html($('#status').html() +  hours + ' hours ' +  minutes + ' minutes ' + category + ' ' + '<br />');
+		}  
+	   
+    }); 
+	
+}
+
+$(".cell").mousedown(function (e) {
+	if( e.button == 2 ) { 
+		alert('Right mouse button!'); 
+	return false; 
+	} 
+		
+	isMouseDown = true;			
+	$(this).toggleClass('selectedCell');			
+	drawLine($(this));
+   
+	// Update the class counts
+	update_counts();
+	return false; // prevent text selection
+});
+		
+$(".cell").mouseover(function () {
+    if (isMouseDown) { 
+        $(this).toggleClass('selectedCell');
+		drawLine($(this));
+		update_counts();
+    }
+});
+
+$(".cell").bind("selectstart", function () {
+      return false; // prevent text selection in IE
+});
+
+$(document).mouseup(function () {
+    isMouseDown = false;
+});
+		
+$(document).mousedown(function(e){ 
+    if( e.button == 2 ) { 
+      alert('Right mouse button!'); 
+      return false; 
+    } 
+    return true; 
+}); 
+
+$(".cellRemark").getElements('input').addClass('inputClass');
+$(document).id(this).getElements('input').addClass('inputClass');
+  
+function drawLine(em) {
+    if (em.text() == "")
+		em.text("")
+	else
+		em.text("");
+}
+
+$(function(){
+    update_counts();
+});
+}); 
+
+</script>
+
+</head>
+
+<body>
+	<h2> Hours of Service </h2> 
+	<p> Click and drag your mouse over the cell <p>
+
+	<div id="wrapper"> </div>
+
+	<table class="tableBorder" id='tblServiceHours'> 
+		<tr id='rowHeading'></</tr>
+		<tr class="row" id='rowOffDuty'></</tr>
+		<tr class="row" id='rowDriving'></</tr>
+		<tr class="row" id='rowOnDutyNotDriving'></</tr>
+		<tr class="row" id='rowRemarks'></</tr>
+	</table>
+	<br>
+	<br>
+	<div> Result: </div>
+	<div id="status"></div>
+
+</body>
+
+
+</html>
+
